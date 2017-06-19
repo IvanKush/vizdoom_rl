@@ -14,8 +14,8 @@ import signal
 # Q-LEARNING SETTINGS
 LEARNING_RATE = 0.00025
 # LEARNING_RATE = 0.0001
-DISCOUNT_FACTOR = 0.99
-EPOCHS = 2
+DISCOUNT_FACTOR = 0.90
+EPOCHS = 20
 LEARNING_STEPS_PER_EPOCH = 2000
 MEMORY_CAPACITY = 10000
 
@@ -35,7 +35,7 @@ MODEL_SAVEFILE = "./ckpt/model.ckpt"
 
 LOAD_MODEL = False
 SKIP_LEARNING = False
-TRAIN_WITH_TEST = False
+TRAIN_WITH_TEST = True
 # Configuration file path
 CONFIG_FILE_PATH = "./scenarios/deadly_corridor.cfg"
 
@@ -201,8 +201,7 @@ class Agent:
             a = rnd.randint(0, len(self.actions) - 1)
         else:
             # Choose the best action according to the network.
-            a = self.brain.simple_get_best_action(s1)
-            
+            a = self.brain.simple_get_best_action(s1)  
         return a
 
     def learn_from_act(self, s1, a, reward, s2, isterminal):
@@ -252,7 +251,7 @@ class Environment:
             self.game.advance_action()
     
     def step(self, action, FRAME_REPEAT):
-        self.game.make_action(action, FRAME_REPEAT) 
+        return self.game.make_action(action, FRAME_REPEAT) 
         
     def reset(self):
         return self.game.new_episode()
@@ -308,7 +307,7 @@ class Manager:
         for learning_step in trange(LEARNING_STEPS_PER_EPOCH, leave=False):                    
             s1 = self.env.get_state()
             a = self.agent.choose_act(epoch, s1)
-            reward = self.env.step(self.actions[a], FRAME_REPEAT)    
+            reward = self.env.step(self.actions[a], FRAME_REPEAT)
             isterminal = self.env.is_episode_finished()
             s2 = self.env.get_state() if not isterminal else None
             self.agent.learn_from_act(s1, a, reward, s2, isterminal)
